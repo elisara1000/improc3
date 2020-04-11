@@ -57,4 +57,18 @@ figure, imshow(inv)
 % inverse transform
 
 
+W8 = hmat(8)
+
+function Wn = hmat(N)
+    Wn = zeros(N);
+    for i = 1 : N/2
+        Wn(i, 2*i - 1) = 1/2;
+        Wn(i, 2*i) = 1/2;
+        
+        Wn(i + N/2, 2*i - 1) = -1/2;
+        Wn(i + N/2, 2*i) = 1/2;
+    end
+end
+
+
 
