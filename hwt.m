@@ -21,7 +21,7 @@ for j = 1: M
     end
 end
 
-figure, imshow(tr)
+%figure, imshow(tr)
 
 inv = tr;
 
@@ -53,11 +53,17 @@ for i = 1 : N
     end
 end
 
-figure, imshow(inv)
+%figure, imshow(inv)
 % inverse transform
 
 
-W8 = hmat(8)
+num_pass = 2; h = im;
+W = hmat(size(im));
+for pass = 1 : num_pass
+    h = W * h;
+    h = h * W.';
+end
+imshow(h);
 
 function Wn = hmat(N)
     Wn = zeros(N);
@@ -69,6 +75,3 @@ function Wn = hmat(N)
         Wn(i + N/2, 2*i) = 1/2;
     end
 end
-
-
-
