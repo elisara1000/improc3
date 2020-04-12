@@ -1,69 +1,25 @@
 close all; clear; clc;
 
 im = im2double(imread('cameraman.tif'));
-[M, N] = size(im);
 
-tr = im;  % transform of image
-
-% transform rows (iteration 1)
-for i = 1: N  
-    for k = 1 : N/2
-        tr(i,k) = (tr(i, 2*k-1) + tr(i, 2*k))/2; % average
-        tr(i,(N/2)+k) = (tr(i, 2*k-1) - tr(i, 2*k))/2; 
-    end
-end
-
-% transform half columns (iteration 2)
-for j = 1: M
-    for k = 1 : M/2
-        tr(k, j) = (tr(j, 2*k-1) + tr(j, 2*k))/2; % average
-        tr((M/2)+k, j) = (tr(j, 2*k-1) - tr(j, 2*k))/2; 
-    end
-end
-
-%figure, imshow(tr)
-
-inv = tr;
-
-% inverse
-for j = 1 : M
-    pos = 1;
-    for k = 1 : M/2      
-        s = tr(k, j);
-        d = tr((M/2)+k, j);
-        
-        inv(pos, j) = s + d;
-        inv(pos+1, j) = s + d;
-        
-        pos = pos + 2;
-    end
-end
-
-% rows
-for i = 1 : N
-    pos = 1;
-    for k = 1 : N/2      
-        s = tr(i, k);
-        d = tr(i, (N/2)+k);
-        
-        inv(i, pos) = s + d;
-        inv(i, pos+1) = s + d;
-        
-        pos = pos + 2;
-    end
-end
-
-%figure, imshow(inv)
-% inverse transform
-
-
-num_pass = 2; h = im;
+% forward transform
+num_pass = 2;  % num of iterations
+h = im;
 W = hmat(size(im));
 for pass = 1 : num_pass
     h = W * h;
-    h = h * W.';
+    h = h * W.';    % = w*A*wT
 end
 imshow(h);
+
+
+% inverse transform
+for pass = 1 : num_pass
+    h = pow2(num_pass)*W.'*h*W;
+end
+
+figure, imshow(h);
+
 
 function Wn = hmat(N)
     Wn = zeros(N);
