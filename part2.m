@@ -5,19 +5,22 @@ figure, imshow(im)
 title('Original Image')
 
 %% Quantization
-thresh = multithresh(im,7); % split image into 8 levels
+for numLevels = 1 : 4
+    thresh = multithresh(im, pow2(numLevels)); % split into levels
+    % max of each quantized section is assigned to that section
+    valuesMax = [thresh max(im(:))];
+    [quant8_I_max, index] = imquantize(im,thresh,valuesMax);
+   
+    % same with min
+    valuesMin = [min(im(:)) thresh]; 
+    quant8_I_min = valuesMin(index);
 
-% max of each quantized section is assigned to that section
-valuesMax = [thresh max(im(:))];
-[quant8_I_max, index] = imquantize(im,thresh,valuesMax);
+    % show
+    figure, imshowpair(quant8_I_min,quant8_I_max,'montage') 
+    title('Minimum Interval Value           Maximum Interval Value')
+end
 
-% same for min
-valuesMin = [min(im(:)) thresh];
-quant8_I_min = valuesMin(index);
-
-% show
-figure, imshowpair(quant8_I_min,quant8_I_max,'montage') 
-title('Minimum Interval Value           Maximum Interval Value')
+pause;
 
 %% Daubehchis Wavelet transform
 [dA,dH,dV,dD] = dwt2(im,'db2');
@@ -40,6 +43,7 @@ subplot(2,2,4)
 imagesc(dD)
 colormap gray
 title('Diagonal')
+pause;
 
 %% Haar Wavelet Transform
 [hA,hH,hV,hD] = dwt2(im,'haar');
