@@ -4,6 +4,11 @@ im = imread('cameraman.tif');
 figure, imshow(im) 
 title('Original Image')
 
+%% DCT
+dctIm = dct2(im);
+figure, imshow(dctIm);
+pause;
+
 %% Quantization
 for numLevels = 1 : 4
     thresh = multithresh(im, pow2(numLevels)); % split into levels
