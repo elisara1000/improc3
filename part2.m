@@ -4,16 +4,43 @@ im = im2double(imread('cameraman.tif'));
 figure, imshow(im) 
 title('Original Image')
 
-fprintf("     Mean-squared error  |  Peak Signal to Noise Ratio\n");
 
 %% DCT
 dctIm = dct2(im);
-figure, imshow(dctIm);
+
+%number of quantization levels
+num_quant_levels = 10;
+
+%quantize samples in DCT basis
+qdctIm = quant(dctIm,num_quant_levels);
+
+%visually compare complete vs quantized DCT
+figure;
+subplot(2,2,1);
+imshow(dctIm);
+title("Complete DCT");
+
+subplot(2,2,2);
+imshow(qdctIm);
+title(["DCT with " num2str(num_quant_levels) "quantization levels"]);
+
+%retrieve image from quantized samples
+qim = idct2(qdctIm);
 
 % calc
-err = immse(dctIm, im); % mean square error
-peaksnr = psnr(dctIm, im); % PSNR
-fprintf("DCT:       %0.4f               %0.4f\n", err, peaksnr);
+err = immse(qim, im); % mean square error
+peaksnr = psnr(qim, im); % PSNR
+
+subplot(2,2,3);
+imshow(im);
+title("original image");
+
+subplot(2,2,4);
+imshow(qim);
+title(["image resulting from quantized DCT. PSNR:" num2str(peaksnr) "dB, MSE:" num2str(err)]);
+
+%fprintf("     Mean-squared error  |  Peak Signal to Noise Ratio\n");
+%fprintf("DCT:       %0.4f               %0.4f\n", err, peaksnr);
 
 pause;
 
@@ -89,3 +116,10 @@ subplot(2,2,4)
 imagesc(hD)
 colormap gray
 title('Diagonal')
+
+%% Test
+imshow(cat(2, im, quant(im,1000)));
+
+function xq = quant(x, num_levels)
+    xq = floor(num_levels*x)/num_levels;
+end
