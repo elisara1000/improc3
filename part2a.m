@@ -185,7 +185,7 @@ function huff = jpeg(im, qmat)
     huff = xq;
 end
 
-function hDecode = huffmanEncoding(bloc)
+function arr_hcode = huffmanEncoding(bloc)
 
     s = [0:255]; % symbols
     
@@ -212,8 +212,6 @@ function hDecode = huffmanEncoding(bloc)
     % Huffman Decoding  -- just for checking
     hDecode = huffmandeco(hcode,dict);    
     hDecode = vect2arr(hDecode, 8, 8);
-   
-    
 end
 
 %vector to array conversion
