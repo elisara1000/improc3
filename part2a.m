@@ -1,5 +1,7 @@
 clear all; close all; clc;
 
+global dict;
+
 im_uint8 = imread('cameraman.tif');
 
 figure
@@ -132,7 +134,7 @@ function im = ijpeg(huff, qmat)
             bdct = times(bdct,qmat);
             
             %huffman decoding
-            bdct = huffmanDecoding(bcdt);
+            bdct = huffmanDecoding(bdct);
             
             %convert DCT block to image block
             block = idct2(bdct);
@@ -189,7 +191,8 @@ function huff = jpeg(im, qmat)
 end
 
 function arr_hcode = huffmanEncoding(bloc)
-
+    global dict;
+    
     s = [0:255]; % symbols
     
     totalCount = numel(bloc);
@@ -206,7 +209,7 @@ function arr_hcode = huffmanEncoding(bloc)
     end
     
     % dictionary
-    global dict = huffmandict(s, prob);
+    dict = huffmandict(s, prob);
     
     % Huffman encoding
     hcode = huffmanenco(bloc, dict);
