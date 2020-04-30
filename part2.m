@@ -2,16 +2,26 @@ close all; clear; clc;
 im = im2double(imread('cameraman.tif'));
 
 %% JPEG
+%Quantization matrix specified in JPEG spec for 50% quality
 qmat = [16 11 10 16 24 40 51 61; 12 12 14 19 26 58 60 55;...
     14 13 16 24 40 57 69 56; 14 17 22 29 51 87 80 62; ...
     18 22 37 56 68 109 103 77; 24 35 55 64 81 104 113 92;...
     49 64 78 87 103 121 120 101; 72 92 95 98 112 100 103 99];
 
+%jpeg/ijpeg function 
 im255 = imread('cameraman.tif');
 huff = jpeg(im255, qmat);
-im255 = ijpeg(huff, qmat);
-imshow(im255);
+q50 = ijpeg(huff, qmat);
 
+figure
+subplot(1,2,1);
+imshow(im255);
+title("original image");
+subplot(1,2,2);
+imshow(q50);
+title("JPEG compressed image Quality 50");
+
+pause;
 
 %% DCT
 dctIm = dct2(im);
@@ -130,7 +140,8 @@ function huff = jpeg(im, qmat)
             bdct = dct2(block);
             
             %divide dct coefficients element-wise by quantization matrix
-            bdct = bdct / qmat;
+            %bdct = bdct / qmat;
+            bdct = rdivide(bdct,qmat);
             
             %round resulting matrix
             bdct = round(bdct);
@@ -160,14 +171,14 @@ function im = ijpeg(huff, qmat)
             b_j = j*8+1:(j+1)*8;
             
             %isolate an 8x8 DCT block
-            block = xq(b_i,b_j);
+            bdct = xq(b_i,b_j);
             
             %element-wise multiply with quantization matrix to recover
             %lossy 8x8 image block
-            block = block * qmat;
+            bdct = times(bdct,qmat);
             
             %convert DCT block to image block
-            block = idct2(block);
+            block = idct2(bdct);
             
             %place block into place in image
             im(b_i, b_j) = block;
