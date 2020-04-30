@@ -7,6 +7,13 @@ imshow(im_uint8);
 title("original image");
 figure
 
+hdecode = huffmanEncoding(im_uint8);
+if(hdecode == im_uint8)
+    fprintf("YAY");
+else
+    fprintf("nooo");
+end
+
 %% Define several quantization matrices
 %Quantization matrix specified in JPEG spec for 50% quality
 qmat50 = [16 11 10 16 24 40 51 61; 12 12 14 19 26 58 60 55;...
@@ -167,6 +174,70 @@ function huff = jpeg(im, qmat)
     %TEMPORARY: just return concatenated 8x8 DCT blocks
     huff = xq;
 end
+
+function hDecode = huffmanEncoding(im_uint8)
+
+    s = [0:255]; % symbols
+    
+    % prob
+    [m,n] = size(im_uint8);
+    Totalcount = m*n;
+    cnt = 1;
+    sigma = 0;
+    
+    %compute cumulative prob
+    for i = 0:255
+        k=im_uint8==i;
+        count(cnt)=sum(k(:))
+        %pro array is having the probabilities
+        pro(cnt)=count(cnt)/Totalcount;
+        sigma=sigma+pro(cnt);
+        cumpro(cnt)=sigma;
+        cnt=cnt+1;
+    end
+    
+    
+    % dictionary
+    dict = huffmandict(s, pro);
+    
+    %function which converts array to vector
+    vec_size = 1;
+    for p = 1:m
+        for q = 1:n
+            newvec(vec_size) = im_uint8(p,q);
+            vec_size = vec_size+1;
+        end
+    end
+    
+    % huffman encoding
+    hcode = huffmanenco(newvec, dict);
+    
+    %Huffman Decoding
+    dhsig1 = huffmandeco(hcode,dict);
+    
+    %convertign dhsig1 double to dhsig uint8
+    dhsig = uint8(dhsig1);
+    
+    
+    %vector to array conversion
+    dec_row=sqrt(length(dhsig));
+    dec_col=dec_row;
+    %variables using to convert vector 2 array
+    arr_row = 1;
+    arr_col = 1;
+    vec_si = 1;
+    for x = 1:m
+        for y = 1:n
+            hDecode(x,y)=dhsig(vec_si);
+            arr_col = arr_col+1;
+            vec_si = vec_si + 1;
+        end
+    arr_row = arr_row+1;
+    end
+
+    
+end
+
 
 function qmat = make_qmat(Q, qmat)
     % Determine S
