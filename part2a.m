@@ -131,6 +131,9 @@ function im = ijpeg(huff, qmat)
             %lossy 8x8 image block
             bdct = times(bdct,qmat);
             
+            %huffman decoding
+            bdct = huffmanDecoding(bcdt);
+            
             %convert DCT block to image block
             block = idct2(bdct);
             
@@ -203,7 +206,7 @@ function arr_hcode = huffmanEncoding(bloc)
     end
     
     % dictionary
-    dict = huffmandict(s, prob);
+    global dict = huffmandict(s, prob);
     
     % Huffman encoding
     hcode = huffmanenco(bloc, dict);
@@ -212,6 +215,15 @@ function arr_hcode = huffmanEncoding(bloc)
     % Huffman Decoding  -- just for checking
     hDecode = huffmandeco(hcode,dict);    
     hDecode = vect2arr(hDecode, 8, 8);
+end
+
+function arr_hdecode = huffmanDecoding(bloc)
+    global dict;
+
+    % Huffman Decoding  -- just for checking
+    hDecode = huffmandeco(bloc,dict);    
+    hDecode = vect2arr(hDecode, 8, 8);
+
 end
 
 %vector to array conversion
