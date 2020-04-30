@@ -225,7 +225,7 @@ function arr_hdecode = huffmanDecoding(bloc)
 
     % Huffman Decoding  -- just for checking
     hDecode = huffmandeco(bloc,dict);    
-    hDecode = vect2arr(hDecode, 8, 8);
+    arr_hdecode = vect2arr(hDecode, 8, 8);
 
 end
 
