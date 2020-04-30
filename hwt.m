@@ -9,49 +9,41 @@ h = im;
 [m, n, cnl] = size(im);
 W = hmat([m, n]);
 for pass = 1 : num_pass
-    h_r = W * h(:,: ,1) * W.';   % = w*A*wT
-    h_g = W * h(:,: ,2) * W.';
-    h_b = W * h(:,: ,3) * W.';
+    h(:,: ,1) = W * h(:,: ,1) * W.';   % = w*A*wT
+    h(:,: ,2) = W * h(:,: ,2) * W.';
+    h(:,: ,3) = W * h(:,: ,3) * W.';
 end
 subplot(2,2, 1)
-imshow(h_r);
+imshow(h(:,: ,1)), title("Red component");
 
 subplot(2, 2, 2)
-imshow(h_g);
+imshow(h(:,: ,2)), title("Green component");
 
 subplot(2, 2, 3)
-imshow(h_b);
-
-h(:,:,1) = h_r;
-h(:,:,2) = h_g;
-h(:,:,3) = h_b;
+imshow(h(:,: ,3)), title("Blue component");
 
 subplot(2, 2, 4)
-imshow(h);
+imshow(h), title("Together");
 
 % inverse transform
 for pass = 1 : num_pass
-    h_r = pow2(num_pass)*W.'*h(:,:,1)*W;
-    h_g = pow2(num_pass)*W.'*h(:,:,2)*W;
-    h_b = pow2(num_pass)*W.'*h(:,:,3)*W;
+    h(:,: ,1) = pow2(num_pass)*W.'*h(:,:,1)*W;
+    h(:,: ,2) = pow2(num_pass)*W.'*h(:,:,2)*W;
+    h(:,: ,3) = pow2(num_pass)*W.'*h(:,:,3)*W;
 end
 
 figure;
 subplot(2,2, 1)
-imshow(h_r);
+imshow(h(:,: ,1)), title("Red component");
 
 subplot(2, 2, 2)
-imshow(h_g);
+imshow(h(:,: ,2)), title("Green component");
 
 subplot(2, 2, 3)
-imshow(h_b);
-
-h(:,:,1) = h_r;
-h(:,:,2) = h_g;
-h(:,:,3) = h_b;
+imshow(h(:,: ,3)), title("Blue component");
 
 subplot(2, 2, 4)
-imshow(h);
+imshow(h), title("Together");
 
 
 
