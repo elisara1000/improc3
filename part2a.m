@@ -1,4 +1,5 @@
 clear all; close all; clc;
+global dict;
 
 im_uint8 = imread('cameraman.tif');
 
@@ -7,12 +8,12 @@ imshow(im_uint8);
 title("original image");
 figure
 
-hdecode = huffmanEncoding(im_uint8);
-if(hdecode == im_uint8)
-    fprintf("YAY");
-else
-    fprintf("nooo");
-end
+% hdecode = huffmanEncoding(im_uint8);
+% if(hdecode == im_uint8)
+%     fprintf("YAY");
+% else
+%     fprintf("nooo");
+% end
 
 %% Define several quantization matrices
 %Quantization matrix specified in JPEG spec for 50% quality
@@ -107,7 +108,9 @@ function im = ijpeg(huff, qmat)
     %retrieve matrix corresponding to concatenated 8x8 DCT blocks
     
     %TEMPORARY: assume that "huff" is already that matrix
-    xq = huff;
+  %  xq = huff;
+    
+    xq = huffmanDecoding(huff);
     
     im = zeros(size(xq));
     
@@ -172,39 +175,42 @@ function huff = jpeg(im, qmat)
     
     %encode blocks as huffman code
     %TEMPORARY: just return concatenated 8x8 DCT blocks
-    huff = xq;
+    huff = huffmanEncoding(xq);
 end
 
-function hDecode = huffmanEncoding(im_uint8)
+function hcode = huffmanEncoding(mat)
+    global dict;
 
     s = [0:255]; % symbols
-    
+    mat = abs(mat);
     % prob
-    [m,n] = size(im_uint8);
-    Totalcount = m*n;
-    cnt = 1;
+    [m,n] = size(mat);
+    totalCount = m*n;
     sigma = 0;
+    
+    prob = zeros(1, 256);
+    cumprob = zeros(1, 256);
     
     %compute cumulative prob
     for i = 0:255
-        k=im_uint8==i;
-        count(cnt)=sum(k(:))
-        %pro array is having the probabilities
-        pro(cnt)=count(cnt)/Totalcount;
-        sigma=sigma+pro(cnt);
-        cumpro(cnt)=sigma;
-        cnt=cnt+1;
+        k = mat == i;
+        prob(i+1) = sum(k(:))/totalCount;
+        sigma = sigma+prob(i+1);
+        cumprob(i+1) = sigma;
     end
     
+    if(sum(prob) ~=1)
+        fprintf("not 1\n")
+    end
     
     % dictionary
-    dict = huffmandict(s, pro);
+    dict = huffmandict(s, prob);
     
     %function which converts array to vector
     vec_size = 1;
     for p = 1:m
         for q = 1:n
-            newvec(vec_size) = im_uint8(p,q);
+            newvec(vec_size) = mat(p,q);
             vec_size = vec_size+1;
         end
     end
@@ -212,32 +218,56 @@ function hDecode = huffmanEncoding(im_uint8)
     % huffman encoding
     hcode = huffmanenco(newvec, dict);
     
-    %Huffman Decoding
-    dhsig1 = huffmandeco(hcode,dict);
-    
-    %convertign dhsig1 double to dhsig uint8
-    dhsig = uint8(dhsig1);
-    
-    
-    %vector to array conversion
-    dec_row=sqrt(length(dhsig));
-    dec_col=dec_row;
-    %variables using to convert vector 2 array
-    arr_row = 1;
-    arr_col = 1;
-    vec_si = 1;
-    for x = 1:m
-        for y = 1:n
-            hDecode(x,y)=dhsig(vec_si);
-            arr_col = arr_col+1;
-            vec_si = vec_si + 1;
-        end
-    arr_row = arr_row+1;
-    end
+%     % Huffman Decoding
+%     dhsig1 = huffmandeco(hcode,dict);
+%     
+%     %convertign dhsig1 double to dhsig uint8
+%     dhsig = uint8(dhsig1);
+%     
+%     
+%     %vector to array conversion
+%     dec_row=sqrt(length(dhsig));
+%     dec_col=dec_row;
+%     %variables using to convert vector 2 array
+%     arr_row = 1;
+%     arr_col = 1;
+%     vec_si = 1;
+%     for x = 1:m
+%         for y = 1:n
+%             hDecode(x,y)=dhsig(vec_si);
+%             arr_col = arr_col+1;
+%             vec_si = vec_si + 1;
+%         end
+%     arr_row = arr_row+1;
+%     end
 
     
 end
 
+function hDecode = huffmanDecoding(bloc)
+    global dict;
+
+    hDecode = huffmandeco(bloc,dict);    
+    
+    [m,n] = size(bloc);
+    
+    %vector to array conversion
+     dec_row=sqrt(length(bloc));
+     dec_col=dec_row;
+     %variables using to convert vector 2 array
+     arr_row = 1;
+     arr_col = 1;
+     vec_si = 1;
+     for x = 1:m
+         for y = 1:n
+             hDecode(x,y)=bloc(vec_si);
+             arr_col = arr_col+1;
+             vec_si = vec_si + 1;
+         end
+     arr_row = arr_row+1;
+     end
+
+end
 
 function qmat = make_qmat(Q, qmat)
     % Determine S
