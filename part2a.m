@@ -7,12 +7,20 @@ imshow(im_uint8);
 title("original image");
 figure
 
-hdecode = huffmanEncoding(im_uint8);
-if(hdecode == im_uint8)
-    fprintf("YAY");
-else
-    fprintf("nooo");
-end
+% bloc = [1,1, 1, 4, 200, 200, 35, 4;...
+%     1,100, 123, 4, 230, 240, 30, 4;...
+%     1,1, 1, 4, 20, 200, 35, 65;...
+%     1,1, 1, 4, 230, 200, 35, 65;...
+%     1,1, 1, 4, 250, 200, 35, 234;...
+%     1,1, 1, 4, 220, 200, 35, 143;...
+%     11,11, 41, 44, 200, 200, 35, 0;...
+%     14,12, 11, 44, 24, 20, 35, 34];
+% hdecode = huffmanEncoding(bloc(:).');
+% if(hdecode == bloc)
+%     fprintf("YAY");
+% else
+%     fprintf("nooo");
+% end
 
 %% Define several quantization matrices
 %Quantization matrix specified in JPEG spec for 50% quality
@@ -164,9 +172,11 @@ function huff = jpeg(im, qmat)
             
             %round resulting matrix
             bdct = round(bdct);
+                        
+            %encode 8x8 blocks using huffman encoding
+            huff_bdct = huffmanEncoding(bdct(:).');
             
-            
-            xq(b_i, b_j) = bdct;
+            xq(b_i, b_j) = huff_bdct;
         end
     end
     
@@ -175,67 +185,52 @@ function huff = jpeg(im, qmat)
     huff = xq;
 end
 
-function hDecode = huffmanEncoding(im_uint8)
+function hDecode = huffmanEncoding(bloc)
 
     s = [0:255]; % symbols
     
-    % prob
-    [m,n] = size(im_uint8);
-    Totalcount = m*n;
-    cnt = 1;
-    sigma = 0;
+    totalCount = numel(bloc);
+    prob = zeros(1,256);
     
-    %compute cumulative prob
+    % compute cumulative prob
     for i = 0:255
-        k=im_uint8==i;
-        count(cnt)=sum(k(:))
-        %pro array is having the probabilities
-        pro(cnt)=count(cnt)/Totalcount;
-        sigma=sigma+pro(cnt);
-        cumpro(cnt)=sigma;
-        cnt=cnt+1;
+        k = bloc == i;
+        prob(i+1) = sum(k(:))/ totalCount; % num of time i occurs/total
     end
     
+    if (sum(prob)~= 1)
+        fprintf("\nprob=%f\n" , sum(prob))
+    end
     
     % dictionary
-    dict = huffmandict(s, pro);
+    dict = huffmandict(s, prob);
     
-    %function which converts array to vector
-    vec_size = 1;
-    for p = 1:m
-        for q = 1:n
-            newvec(vec_size) = im_uint8(p,q);
-            vec_size = vec_size+1;
-        end
-    end
+    % Huffman encoding
+    hcode = huffmanenco(bloc, dict);
+    arr_hcode = vect2arr(hcode, 8, 8);
     
-    % huffman encoding
-    hcode = huffmanenco(newvec, dict);
+    % Huffman Decoding  -- just for checking
+    hDecode = huffmandeco(hcode,dict);    
+    hDecode = vect2arr(hDecode, 8, 8);
+   
     
-    %Huffman Decoding
-    dhsig1 = huffmandeco(hcode,dict);
-    
-    %convertign dhsig1 double to dhsig uint8
-    dhsig = uint8(dhsig1);
-    
-    
-    %vector to array conversion
-    dec_row=sqrt(length(dhsig));
-    dec_col=dec_row;
-    %variables using to convert vector 2 array
+end
+
+%vector to array conversion
+function arr = vect2arr(vec, m, n) 
     arr_row = 1;
     arr_col = 1;
     vec_si = 1;
     for x = 1:m
         for y = 1:n
-            hDecode(x,y)=dhsig(vec_si);
+            arr(x,y)=vec(vec_si);
             arr_col = arr_col+1;
             vec_si = vec_si + 1;
         end
-    arr_row = arr_row+1;
+        arr_row = arr_row+1;
     end
 
-    
+    arr = arr.';
 end
 
 
